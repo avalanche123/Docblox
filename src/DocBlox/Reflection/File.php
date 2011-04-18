@@ -19,9 +19,6 @@ class DocBlox_Reflection_File extends DocBlox_Reflection_DocBlockedAbstract
   /** @var DocBlox_Token_Iterator */
   protected $tokens = null;
 
-  /** @var string The path of the file. */
-  protected $filename           = '';
-
   /** @var string Contents of the given file. */
   protected $contents = '';
 
@@ -168,10 +165,16 @@ class DocBlox_Reflection_File extends DocBlox_Reflection_DocBlockedAbstract
       );
     }
 
+    // if the encoding is unknown-8bit or x-user-defined we assume it might be latin1; otherwise iconv will fail
+    if (($encoding == 'unknown-8bit') || ($encoding == 'x-user-defined'))
+    {
+      $encoding = 'latin1';
+    }
+
     // convert if a source encoding is found; otherwise we throw an error and have to continue using the given data
     if (($encoding !== null) && (strtolower($encoding) != 'utf-8'))
     {
-      $tmp_contents = iconv($encoding, 'UTF-8', $contents);
+      $tmp_contents = iconv($encoding, 'UTF-8//IGNORE', $contents);
       if ($tmp_contents === false)
       {
         $this->log(
@@ -211,18 +214,6 @@ class DocBlox_Reflection_File extends DocBlox_Reflection_DocBlockedAbstract
     }
 
     return null;
-  }
-
-  /**
-   * Sets the file name for this file.
-   *
-   * @param string $filename The path of this file.
-   *
-   * @return void
-   */
-  public function setFilename($filename)
-  {
-    $this->filename = $filename;
   }
 
   /**
@@ -395,17 +386,10 @@ class DocBlox_Reflection_File extends DocBlox_Reflection_DocBlockedAbstract
     }
 
     // TODO: add a check if a class immediately follows this docblock, if so this is not a page level docblock but a class docblock
+    $valid = $this->validateDocBlock($this->filename, $docblock ? $docblock->getLineNumber() : 0, $result);
 
-    // even with a docblock at top (which may belong to some other component) does it
-    // need to have a package tag to classify
-    if ($result && !$result->hasTag('package'))
-    {
-      $result = null;
-    }
-
-    if (!$result)
-    {
-      $this->log('No Page-level DocBlock was found for '.$this->getName(), Zend_Log::ERR);
+    if (!$valid) {
+        $result = null;
     }
 
     return $result;
@@ -536,6 +520,7 @@ class DocBlox_Reflection_File extends DocBlox_Reflection_DocBlockedAbstract
     $this->resetTimer('class');
 
     $class = new DocBlox_Reflection_Class();
+    $class->setFilename($this->filename);
     $class->setNamespace($this->active_namespace);
     $class->setNamespaceAliases($this->namespace_aliases);
     $class->parseTokenizer($tokens);
@@ -557,6 +542,7 @@ class DocBlox_Reflection_File extends DocBlox_Reflection_DocBlockedAbstract
     $this->resetTimer('function');
 
     $function = new DocBlox_Reflection_Function();
+    $function->setFilename($this->filename);
     $function->setNamespace($this->active_namespace);
     $function->setNamespaceAliases($this->namespace_aliases);
     $function->parseTokenizer($tokens);
@@ -578,6 +564,7 @@ class DocBlox_Reflection_File extends DocBlox_Reflection_DocBlockedAbstract
     $this->resetTimer('constant');
 
     $constant = new DocBlox_Reflection_Constant();
+    $constant->setFilename($this->filename);
     $constant->setNamespace($this->active_namespace);
     $constant->setNamespaceAliases($this->namespace_aliases);
     $constant->parseTokenizer($tokens);
@@ -641,6 +628,7 @@ class DocBlox_Reflection_File extends DocBlox_Reflection_DocBlockedAbstract
     $this->resetTimer('include');
 
     $include = new DocBlox_Reflection_Include();
+    $include->setFilename($this->filename);
     $include->setNamespace($this->active_namespace);
     $include->parseTokenizer($tokens);
 

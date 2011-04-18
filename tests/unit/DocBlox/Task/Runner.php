@@ -1,30 +1,23 @@
 <?php
 /**
- * DocBlox TextUI
+ * DocBlox
  *
  * @category  DocBlox
- * @package   Base
+ * @package   Tests
  * @copyright Copyright (c) 2010-2011 Mike van Riel / Naenius. (http://www.naenius.com)
  * @author    Ben Selby <benmatselby@gmail.com>
  */
 
 /**
- * This class represents the UI aspect of the application
+ * Testing class for DocBlox_Task_Runner.
  *
  * @category  DocBlox
- * @package   Base
+ * @package   Tests
  * @copyright Copyright (c) 2010-2011 Mike van Riel / Naenius. (http://www.naenius.com)
  * @author    Ben Selby <benmatselby@gmail.com>
+ * @author    Mike van Riel <mike.vanriel@naenius.com>
  */
-class DocBlox_TextUI
+class DocBlox_Task_RunnerTest extends PHPUnit_Extensions_OutputTestCase
 {
-    /**
-     * Output the header
-     *
-     * @return void
-     */
-    public static function outputHeader()
-    {
-        echo 'DocBlox version ' . DocBlox_Core_Abstract::VERSION . PHP_EOL . PHP_EOL;
-    }
+
 }
